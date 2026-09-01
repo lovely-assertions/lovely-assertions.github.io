@@ -138,12 +138,18 @@ jobs:
         # content type, and an agent that asks for a page and is handed
         # `application/octet-stream` has to guess what it received. Both
         # spellings of the address are checked, because both are published.
+        #
+        # The `\n` in the format string is load-bearing. Without it curl writes
+        # no trailing newline, `read` reaches EOF without a delimiter and returns
+        # non-zero even though it assigned both variables, and `set -e` ends the
+        # step on the first iteration -- before the `echo` that would have said
+        # which URL it was looking at.
         run: |
           set -euo pipefail
           base="${{ needs.deploy.outputs.page_url || 'https://lovely-assertions.dev' }}"
           base="${base%/}"
           for path in /llms.txt /llms-full.txt /index.md /docs/guides/strings.md /docs/guides/strings/index.md; do
-            read -r code type < <(curl -sS -o /dev/null -w '%{http_code} %{content_type}' \
+            read -r code type < <(curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' \
               --retry 3 --retry-delay 5 "$base$path")
             echo "$code  $type  $base$path"
             test "$code" = "200"
