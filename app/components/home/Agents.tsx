@@ -1,5 +1,10 @@
 /**
- * The argument that a coding agent reads these tests too.
+ * The argument that an AI coding agent reads these tests too.
+ *
+ * The section said "agent" throughout and named none of them. On a page about
+ * a testing library the word has other readings -- a user agent, a build agent,
+ * somebody acting on your behalf -- so the eyebrow and the heading say AI once
+ * each, where a reader meets the section, and the rest can go on saying agent.
  *
  * The heading used to claim that Claude and Copilot fix a named failure *faster*
  * than they fix `assert a == b`. Nobody measured that, and it is a claim about
@@ -13,8 +18,10 @@
 export function Agents() {
   return (
     <section className="section">
-      <p className="eyebrow">your agent reads these tests too</p>
-      <h2 className="section-title has-lead">An agent can only debug what the test run printed.</h2>
+      <p className="eyebrow">AI agents read these tests too</p>
+      <h2 className="section-title has-lead">
+        An AI agent can only debug what the test run printed.
+      </h2>
       <p className="section-lead">
         A diff of two dictionaries leaves it to guess which of them is wrong. A sentence naming the
         value, the requirement and what it actually held tells it which line to edit.
