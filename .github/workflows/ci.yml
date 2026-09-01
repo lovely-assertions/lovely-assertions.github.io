@@ -1,0 +1,60 @@
+name: CI
+
+# The same gates the deploy runs, on every pull request, without publishing.
+#
+# Docs are fetched from the released tag here too, so a pull request is checked
+# against the documentation the site actually serves rather than against
+# whatever is on the library's main branch.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check, before the build
+        # The whole pre-build chain, from package.json. Spelled there and only
+        # there: this workflow and the deploy one used to list the gates step by
+        # step, and the two lists had already drifted -- a pull request was
+        # skipping `sitemap` and `gate:runnable`, so those failures only showed
+        # up on main, after merge, as a failed deploy.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pnpm run ci:before
+
+      - name: Build
+        # Pre-rendering runs each route against a short-lived preview server on
+        # an ephemeral port, and a cold-start race can refuse a single
+        # connection (remix-run/react-router#15255). Retrying the build alone is
+        # the documented workaround, and it is why the chain is split in three
+        # rather than run as one `pnpm run ci` -- a retry must not re-fetch the
+        # documentation or re-run the gates that already passed.
+        run: pnpm run build || pnpm run build
+
+      - name: Check the built site
+        # Everything that can only be checked once there is a site: the search
+        # index, the sitemap and its two link directions, the markdown for
+        # agents, and the four browser gates.
+        run: pnpm run ci:after

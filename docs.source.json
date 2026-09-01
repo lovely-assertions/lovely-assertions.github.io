@@ -1,0 +1,27 @@
+{
+  "repo": "lovely-assertions/lovely-assertions",
+  "ref": "latest",
+  "include": [
+    "docs/**",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "expect": {
+    "minFiles": 37,
+    "requiredPaths": [
+      "docs/README.md",
+      "docs/reference/assertions.md",
+      "README.md",
+      "CHANGELOG.md",
+      "LICENSE"
+    ],
+    "minLines": {
+      "docs/reference/assertions.md": 1000
+    },
+    "signaturePairs": 253
+  }
+}

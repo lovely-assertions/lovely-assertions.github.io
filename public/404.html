@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No such page · lovely-assertions</title>
+<!--
+  GitHub Pages serves this file for any path it cannot find, and it is the one
+  page on the site that is not pre-rendered by the build.
+
+  Deliberately self-contained: it carries no hashed asset names, so it cannot
+  break the next time the stylesheet is rebuilt under a new hash -- which is
+  exactly the kind of breakage nobody notices, because nobody visits this page
+  on purpose.
+
+  It is not indexable: GitHub Pages answers with a real 404 status, so a crawler
+  drops it rather than reading it.
+-->
+<meta name="robots" content="noindex">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-block-size: 100vh;
+    display: grid;
+    place-content: center;
+    gap: 14px;
+    padding: 24px;
+    background: oklch(0.985 0.01 340);
+    color: oklch(0.24 0.03 340);
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .dots { display: flex; gap: 6px; justify-content: center; margin-block-end: 6px; }
+  .dots span { inline-size: 10px; block-size: 10px; border-radius: 999px; }
+  .dots span:nth-child(1) { background: #ea5da9; }
+  .dots span:nth-child(2) { background: #ad8dfd; }
+  .dots span:nth-child(3) { background: #e9c85e; }
+  h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.03em; }
+  p { margin: 0; font-size: 17px; line-height: 1.6; color: oklch(0.45 0.03 340); }
+  nav { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-block-start: 10px; }
+  a { color: oklch(0.48 0.19 352); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid oklch(0.48 0.19 352); outline-offset: 3px; border-radius: 4px; }
+  @media (prefers-color-scheme: dark) {
+    body { background: oklch(0.175 0.028 320); color: oklch(0.962 0.008 340); }
+    p { color: oklch(0.785 0.015 340); }
+    a { color: oklch(0.79 0.16 350); }
+  }
+</style>
+</head>
+<body>
+  <p class="dots" aria-hidden="true"><span></span><span></span><span></span></p>
+  <h1>No such page</h1>
+  <p>That page is not part of this documentation.</p>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/docs/">Documentation</a>
+    <a href="/playground/">Playground</a>
+  </nav>
+</body>
+</html>

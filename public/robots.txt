@@ -1,0 +1,56 @@
+# Everything here is meant to be read, by people, by crawlers and by agents
+# alike. This is the documentation for an open-source library: being quoted,
+# indexed, summarised and trained on is the point of publishing it.
+
+# As a condition of accessing this website, you agree to abide by the following
+# content signals:
+#
+# (a) If a content-signal = yes, you may collect content for the corresponding
+#     use.
+# (b) If a content-signal = no, you may not collect content for the
+#     corresponding use.
+# (c) If the website operator does not include a content signal for a
+#     corresponding use, the website operator neither grants nor restricts
+#     permission via content signal with respect to the corresponding use.
+#
+# The content signals and their meanings are:
+#
+# search:   building a search index and providing search results.
+# ai-input: inputting content into one or more AI models (retrieval-augmented
+#           generation, grounding, or other real-time use for generative
+#           answers).
+# ai-train: training or fine-tuning AI models.
+#
+# All three are granted here. See https://contentsignals.org/ and
+# https://datatracker.ietf.org/doc/draft-romm-aipref-contentsignals/
+
+User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+# The same permission in the IETF AIPREF vocabulary, which is where this is
+# heading: draft-ietf-aipref-vocab, attached to robots.txt by
+# draft-ietf-aipref-attach.
+Content-Usage: train-ai=y, search=y
+Allow: /
+
+# The client router's fallback shell. It has no content of its own -- every
+# real route is a pre-rendered file -- and indexing it would put an empty
+# page in the results.
+Disallow: /__spa-fallback.html
+
+# Deliberately no per-crawler groups. A named group replaces the wildcard one
+# for that crawler rather than adding to it, so spelling out GPTBot, ClaudeBot,
+# PerplexityBot and the rest would mean repeating every rule above in each --
+# and the day one of them is repeated wrong, that crawler quietly gets a
+# different site. One group, allowing everything, cannot drift.
+
+# For agents
+# ----------
+# /llms.txt      An index of every page, with a sentence describing each and a
+#                link to its markdown. Start here.
+# /llms-full.txt The whole documentation inlined in one file.
+# /<path>.md     The markdown for any page: append `.md` to the path of any URL
+#                on this site. /docs/guides/strings/ is /docs/guides/strings.md.
+#                Every page also carries a <link rel="alternate"
+#                type="text/markdown"> pointing at its own.
+
+Sitemap: https://lovely-assertions.dev/sitemap.xml

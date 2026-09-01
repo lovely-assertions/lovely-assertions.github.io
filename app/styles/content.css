@@ -1,0 +1,652 @@
+/*
+ * The rendered documentation body.
+ *
+ * Styled by element under one wrapper class, because the markdown comes from
+ * another repository and can never be asked to carry a class name. The element
+ * set is closed and verified against the corpus: h2/h3 (no h4+), p, a, ul/ol,
+ * blockquote, hr, strong, em, tables, pre, code.
+ *
+ * Everything reads the theme layer, so the body flips with the rest of the docs.
+ */
+
+@layer content {
+  /*
+   * The measure belongs to the prose, not to the column.
+   *
+   * Capping the wrapper narrows everything with it -- headings, code cards,
+   * callouts, tables -- so a code sample ends up inset from the text it
+   * explains. Only paragraphs and lists get the 36em measure.
+   */
+  .doc-body {
+    color: var(--fg-soft);
+    font-size: 16px;
+    line-height: 1.72;
+  }
+
+  .doc-body > :is(p, ul, ol) {
+    max-inline-size: 36em;
+  }
+
+  .doc-body > * + * {
+    margin-block-start: 18px;
+  }
+
+  /*
+   * No `scroll-margin-block-start` here.
+   *
+   * `html` already carries `scroll-padding-block-start` for exactly this, and
+   * per CSSOM-View the two compose rather than one winning: the target's
+   * scroll-margin edge is aligned to the scrollport's scroll-padding edge.
+   * Measured on the reference, under a 63px sticky header: both declarations
+   * put the heading at 191.85px, either one alone at 95.85px. So the same
+   * heading sat at 96px when reached through `scrollToAnchor` and at 192px on a
+   * hard load of its own fragment. The root declaration is the one kept --
+   * it also covers headings the pipeline emits outside `.doc-body`.
+   */
+  .doc-body h2,
+  .doc-body h3 {
+    color: var(--fg);
+  }
+
+  .doc-body h2 {
+    margin-block: 44px 16px;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.026em;
+  }
+
+  .doc-body h3 {
+    margin-block: 32px 12px;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+
+  /*
+   * The underline is drawn, not decorated.
+   *
+   * A native underline is computed per inline box, so a link containing a
+   * smaller `code` gets two underlines at two heights with a gap between them.
+   * A background line is one line across the whole link, whatever it contains.
+   */
+  .doc-body a {
+    color: var(--pink);
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 calc(100% - 1px);
+    transition: background-size 160ms ease;
+  }
+
+  .doc-body a:hover {
+    color: var(--pink);
+    background-size: 100% 2px;
+  }
+
+  .doc-body ul,
+  .doc-body ol {
+    padding-inline-start: 22px;
+  }
+
+  .doc-body li + li {
+    margin-block-start: 8px;
+  }
+
+  .doc-body li::marker {
+    color: var(--fg-mute);
+  }
+
+  .doc-body blockquote {
+    margin-inline: 0;
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    color: var(--fg-soft);
+  }
+
+  .doc-body hr {
+    margin-block: 44px;
+    border: 0;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .doc-body strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  /*
+   * The anchor beside a heading is revealed in CSS, never bound in JavaScript:
+   * hover handlers attached at mount are lost when a later render replaces the
+   * node, and the controls ship permanently invisible.
+   */
+  .doc-body :is(h2, h3) .heading-anchor {
+    margin-inline-start: 10px;
+    color: var(--pink);
+    font-family: var(--font-mono);
+    font-size: 17px;
+    opacity: 0;
+    text-decoration: none;
+    transition: opacity 280ms ease;
+  }
+
+  .doc-body :is(h2, h3) .heading-anchor::after {
+    content: "#";
+  }
+
+  .doc-body :is(h2, h3):hover .heading-anchor,
+  .doc-body :is(h2, h3):focus-within .heading-anchor,
+  .doc-body .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+
+  /* ---- Code ---------------------------------------------------------------- */
+
+  /*
+   * Inline code, but never the code inside a highlighted block.
+   * `overflow-wrap: anywhere` is what actually wraps a long identifier:
+   * `pre-wrap` alone leaves it as one unbreakable token that paints outside
+   * its card.
+   */
+  .doc-body :not(pre) > code {
+    padding: 0.12em 0.36em;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    color: var(--fg);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * A link is one thing, including the code inside it.
+   *
+   * Its own ground would paint a grey slab through the middle of a coloured
+   * phrase and hide the link's underline behind it. It keeps the monospace
+   * face -- that is what it is telling the reader -- and gives up the rest.
+   * Declared after the rule above, which it has to outrank on source order.
+   */
+  .doc-body a code {
+    padding: 0;
+    background: none;
+    color: inherit;
+  }
+
+  /* ---- Code chrome ----------------------------------------------------- */
+
+  .code-block {
+    border-radius: 14px;
+    background: var(--code-bg);
+    overflow: hidden;
+  }
+
+  .code-block pre {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .code-bar {
+    display: flex;
+    align-items: center;
+    /* The language sits left; every control is pushed to the right by the gap
+       below, so adding one shifts nothing else. */
+    gap: 10px;
+    padding: 10px 14px 10px 18px;
+    border-block-end: 1px solid oklch(1 0 0 / 0.09);
+  }
+
+  .code-lang {
+    margin-inline-end: auto;
+  }
+
+  /* ---- Editing an example ------------------------------------------------ */
+
+  /* The editor is laid over the block, so the block is the positioned box. */
+  .doc-body [data-example] pre {
+    position: relative;
+  }
+
+  /*
+   * A caret and a selection, and nothing else.
+   *
+   * The text is transparent because the `<pre>` underneath is already drawing
+   * it -- highlighted until the first keystroke, plain after. Two boxes with
+   * identical metrics, so nothing has to be measured to keep them aligned.
+   */
+  .code-editor {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: var(--code-fg);
+    resize: none;
+    overflow: hidden;
+  }
+
+  .code-editor::selection {
+    background: oklch(0.86 0.11 92 / 0.35);
+  }
+
+  .code-editor:focus-visible {
+    outline: 2px solid var(--pink);
+    outline-offset: 2px;
+    border-radius: 14px;
+  }
+
+  /* Below 768px a font under 16px makes iOS zoom the page on focus. Applied to
+     the block being edited, not to every block on the page: the same rule
+     sitewide grows a phone-width guide by a sixth for readers who never edit. */
+  @media (max-width: 767px) {
+    [data-editing] pre,
+    [data-editing] .code-editor {
+      font-size: 16px;
+    }
+  }
+
+  [data-edited] .code-lang::after {
+    content: " · edited";
+    color: oklch(0.86 0.11 92);
+  }
+
+  /*
+   * A block after an edited one, not yet re-run.
+   *
+   * A page is one namespace: changing block three changes what block seven
+   * prints. Saying so is cheaper than letting a reader discover it.
+   */
+  [data-stale] .code-lang::after {
+    content: " · depends on an edit above";
+    color: oklch(0.78 0.03 340);
+  }
+
+  [data-edited][data-stale] .code-lang::after {
+    content: " · edited, and depends on an edit above";
+  }
+
+  /* ---- Running an example ------------------------------------------------ */
+
+  .code-action {
+    padding: 4px 11px;
+    border: 1px solid oklch(1 0 0 / 0.18);
+    border-radius: 999px;
+    background: oklch(1 0 0 / 0.08);
+    color: var(--text-on-dark);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background-color 200ms ease;
+  }
+
+  .code-action:hover:not(:disabled) {
+    background: oklch(1 0 0 / 0.2);
+  }
+
+  .code-action:disabled {
+    opacity: 0.5;
+  }
+
+  /*
+   * The reader's result, never the quoted output.
+   *
+   * A separate pane on purpose: the pane above carries a claim CI verified, and
+   * overwriting it would let a reader's own edit rewrite the documentation in
+   * front of them. This one is theirs and is labelled as theirs.
+   */
+  .example-result {
+    border-block-start: 1px solid oklch(1 0 0 / 0.09);
+    background: oklch(1 0 0 / 0.03);
+    /* Room for the median result, so the page does not jump when one arrives. */
+    min-block-size: 76px;
+  }
+
+  .example-result-label {
+    margin: 0;
+    padding: 10px 18px 0;
+    color: oklch(0.78 0.03 340);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .example-result pre {
+    margin: 0;
+    padding: 8px 18px 18px;
+    overflow-x: auto;
+    color: var(--code-fg);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* The bar that runs while Python is on its way. Indeterminate on purpose:
+     there is no honest percentage to report for a browser fetch. */
+  .example-progress {
+    display: block;
+    margin: 4px 18px 16px;
+    block-size: 2px;
+    border-radius: 2px;
+    background: oklch(1 0 0 / 0.1);
+    overflow: hidden;
+  }
+
+  .example-progress > span {
+    display: block;
+    block-size: 100%;
+    border-radius: 2px;
+    background: var(--pink);
+  }
+
+  .example-result[data-state="booting"] .example-result-label {
+    color: oklch(0.82 0.06 340);
+  }
+
+  /*
+   * A failed assertion is not an error. 163 of the 242 quoted outputs on this
+   * site are failure messages -- they are the product. Only a traceback, which
+   * no example in the corpus produces, is shown as something going wrong.
+   */
+  .example-result[data-state="failure"] .example-result-label {
+    color: var(--failure-hint, oklch(0.86 0.11 92));
+  }
+
+  .example-result[data-state="raised"] .example-result-label,
+  .example-result[data-state="unavailable"] .example-result-label {
+    color: oklch(0.8 0.13 25);
+  }
+
+  /* A standalone block has no figure to sit inside, so the pane rounds itself. */
+  .code-block > .example-result {
+    border-end-start-radius: 14px;
+    border-end-end-radius: 14px;
+  }
+
+  .code-lang {
+    color: oklch(0.78 0.03 340);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Code surfaces stay dark in both themes: a terminal is dark, and the page
+     is the paper it sits on. */
+  .doc-body pre {
+    padding: 20px 20px 22px;
+    border-radius: 14px;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-size: 13.5px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-body pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ---- Tables --------------------------------------------------------------- */
+
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  @media (max-width: 760px) {
+    /* Below this a three-column table would crush its columns; it scrolls
+       inside its own wrapper instead. */
+    .doc-body table {
+      min-inline-size: 520px;
+    }
+  }
+
+  .doc-body table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+
+  .doc-body th,
+  .doc-body td {
+    padding: 13px 16px;
+    /* Rules on both axes: the design draws the table as a grid whose 1px gaps
+       are the rules, so columns are separated as well as rows. */
+    border-block-end: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
+    background: var(--panel);
+    text-align: start;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .doc-body tr > :is(th, td):last-child {
+    border-inline-end: 0;
+  }
+
+  .doc-body thead th {
+    padding: 12px 16px;
+    background: var(--bg-soft);
+    /* Muted, so the header labels the data rather than shouting over it. */
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .doc-body tbody tr:last-child :is(td, th) {
+    border-block-end: 0;
+  }
+
+  /* A row of blank header cells is a visible defect, not a header. */
+  .doc-body table[data-headerless] thead {
+    display: none;
+  }
+
+  .doc-body td code {
+    color: var(--pink);
+  }
+
+  /* ---- The verified example ------------------------------------------------- */
+
+  /*
+   * An example and the output it really produced, as one unit.
+   *
+   * The library's test suite executes every example and byte-compares the
+   * output beside it, so these two panes are a claim and its evidence. Two
+   * identically-styled code blocks would let a reader read the output as more
+   * code, which throws away the fact that it is real.
+   */
+  .example {
+    /* A figure's UA margin is 1em on each side; left in place it indents every
+       executed example away from the prose around it. */
+    margin-block: 24px;
+    margin-inline: 0;
+    border-radius: 14px;
+    background: var(--code-bg);
+    overflow: hidden;
+  }
+
+  /* The panes sit on the figure's own dark ground, so nothing inside repaints
+     it -- otherwise the bar and the code read as two separate cards. */
+  .example pre,
+  .code-block pre {
+    margin: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .example-output {
+    border-block-start: 1px solid oklch(1 0 0 / 0.09);
+    background: oklch(1 0 0 / 0.03);
+  }
+
+  .example-output::before {
+    content: "output";
+    display: block;
+    padding: 10px 18px 0;
+    color: oklch(0.78 0.03 340);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* An edited block no longer carries the claim the build verified. */
+  .example[data-verified="false"] .example-output::before {
+    content: "output, from the unedited example";
+  }
+
+  .example-output pre {
+    /* Indentation inside an output block is meaningful: the difference engine
+       and soft-assertion reports both use it. Never re-wrap or re-indent. */
+    padding-block-start: 8px;
+    background: none;
+  }
+
+  .example-note {
+    margin: 0;
+    padding: 12px 18px;
+    border-block-end: 1px solid oklch(1 0 0 / 0.09);
+    color: oklch(0.78 0.03 340);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  .example-note::before {
+    content: "not executed — ";
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .example-note[data-kind="expect-error"]::before {
+    content: "rejected by the type checker on purpose — ";
+    color: var(--failure-hint);
+  }
+
+  .verbatim {
+    padding: 20px;
+    border-radius: 14px;
+    background: var(--bg-soft);
+    color: var(--fg-soft);
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
+  /* ---- Syntax highlighting --------------------------------------------------- */
+
+  /*
+   * The highlighter writes its colours inline from a single theme, because the
+   * code surface is dark whichever way the page is set. Only the ground needs
+   * clearing: the theme's own background would fight the card it sits in.
+   */
+  .doc-body .shiki {
+    background-color: transparent;
+  }
+}
+
+@layer content {
+  /* ---- Callouts ---------------------------------------------------------- */
+
+  /*
+   * Every kind is token-driven so it survives the dark theme. Hardcoding a pale
+   * background here is how a callout ends up as dark text on a dark page.
+   */
+  .callout {
+    display: flex;
+    gap: 14px;
+    margin-inline: 0;
+    padding: 18px 20px;
+    border: 0;
+    border-radius: 14px;
+  }
+
+  .callout-label {
+    flex: none;
+    padding-block-start: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .callout-body > * + * {
+    margin-block-start: 12px;
+  }
+
+  .callout-body p {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--fg-soft);
+  }
+
+  .callout[data-kind="note"] {
+    background: var(--accent-soft);
+  }
+
+  .callout[data-kind="note"] .callout-label {
+    color: var(--pink);
+  }
+
+  .callout[data-kind="careful"] {
+    background: var(--warn-bg);
+  }
+
+  .callout[data-kind="careful"] .callout-label {
+    color: var(--warn-fg);
+  }
+
+  .callout[data-kind="tip"] {
+    background: var(--tip-bg);
+  }
+
+  .callout[data-kind="tip"] .callout-label {
+    color: var(--tip-fg);
+  }
+
+  /* ---- Command tabs ------------------------------------------------------- */
+
+  .tab-track {
+    display: inline-flex;
+    gap: 2px;
+    margin-block-end: 12px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+  }
+
+  .tab-track button {
+    padding: 8px 16px;
+    line-height: normal;
+    border: 0;
+    border-radius: 999px;
+    background-color: transparent;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+
+  .tab-track button[aria-selected="true"] {
+    background-color: var(--panel);
+    color: var(--fg);
+    box-shadow: 0 1px 2px oklch(0.5 0.05 340 / 0.14);
+  }
+
+  /* `hidden` is what the switcher toggles; make sure nothing overrides it. */
+  .tab-panel[hidden] {
+    display: none;
+  }
+}

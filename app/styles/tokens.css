@@ -1,0 +1,212 @@
+/*
+ * Design tokens. This file is the whole palette, type scale and spacing set:
+ * every other stylesheet refers to these names and defines no colour of its own.
+ *
+ * Two rules, both load-bearing:
+ *
+ * 1. Keep oklch(). The palette is one family of pastels at near-equal
+ *    lightness, and the hue rotations only stay in step because of it. Hex
+ *    approximations break the coherence, so nothing here is converted.
+ *
+ * 2. Except colours that get animated, which are hex. Colour interpolation
+ *    across oklch() is unreliable in the animation layer, and a tween that
+ *    starts from a mis-parsed colour writes garbage. The three logo dots, the
+ *    mint they tween to, and the nav-link hover are therefore hex -- and their
+ *    resting values are the same hex, so a tween never starts from nonsense.
+ *
+ * Contrast is load-bearing too. The CTA gradient sits at lightness 0.47 because
+ * white on a lighter pink fails AA at 3.9:1, and the docs' light --fg-mute,
+ * --pink and --lilac are dark for the same reason: lighten one and thirty pairs
+ * fail at once. Re-measure anything you touch, in both themes.
+ */
+
+@layer tokens {
+  :root {
+    /* ---- Surfaces ------------------------------------------------------ */
+    --surface-page: oklch(0.975 0.014 340);
+    --surface-card: oklch(0.995 0.006 340);
+    --surface-sunken: oklch(0.955 0.01 340);
+    --surface-nav-scrolled: oklch(0.975 0.014 340 / 0.8);
+
+    /* ---- Ink ----------------------------------------------------------- */
+    --text-strong: oklch(0.27 0.035 340);
+    --text-body: oklch(0.44 0.04 340);
+    --text-muted: oklch(0.44 0.035 340);
+    --text-nav: #4e3c48; /* hex: animated to pink on hover */
+    --text-nav-hover: #d1519a; /* hex: animated */
+    --text-on-dark: oklch(0.96 0.01 340);
+    --text-on-dark-muted: oklch(0.74 0.02 340);
+    --link: oklch(0.55 0.18 350);
+    --link-hover: oklch(0.42 0.15 350);
+
+    /* ---- Brand --------------------------------------------------------- */
+    --brand-pink: #ea5da9; /* hex: animated */
+    --brand-lilac: #ad8dfd; /* hex: animated */
+    --brand-butter: #e9c85e; /* hex: animated */
+    --brand-mint: #3fbe93; /* the colour the dots tween to */
+    --brand-mint-ink: #1f7a5b; /* the check beside the wordmark, AA at 14px */
+
+    /* Circle badges carry white glyphs, so they are much darker than the logo
+       dots: they have to clear 4.5:1. */
+    --badge-pink: oklch(0.5 0.19 352);
+    --badge-lilac: oklch(0.46 0.17 295);
+    --badge-butter: oklch(0.45 0.13 60);
+    --badge-glyph: oklch(0.99 0.01 350);
+
+    /* ---- Gradients: five, and no others -------------------------------- */
+    --gradient-cta: linear-gradient(100deg, oklch(0.47 0.19 355) 0%, oklch(0.46 0.18 315) 100%);
+    --gradient-cta-hover: linear-gradient(
+      100deg,
+      oklch(0.4 0.18 355) 0%,
+      oklch(0.39 0.17 315) 100%
+    );
+    --gradient-marker: linear-gradient(
+      100deg,
+      oklch(0.86 0.12 350) 0%,
+      oklch(0.86 0.11 300) 42%,
+      oklch(0.9 0.12 95) 100%
+    );
+    --gradient-code: linear-gradient(140deg, oklch(0.28 0.055 330) 0%, oklch(0.24 0.05 290) 100%);
+    --gradient-hairline: linear-gradient(90deg, #ea5da9 0%, #ad8dfd 45%, #e9c85e 100%);
+
+    /* ---- Card washes: one hue each, always fading to near-white --------- */
+    --wash-pink: linear-gradient(160deg, oklch(0.955 0.045 350) 0%, oklch(0.99 0.012 350) 70%);
+    --wash-lilac: linear-gradient(160deg, oklch(0.95 0.045 295) 0%, oklch(0.99 0.012 295) 70%);
+    --wash-butter: linear-gradient(160deg, oklch(0.96 0.05 95) 0%, oklch(0.99 0.012 95) 70%);
+    --wash-mint: linear-gradient(160deg, oklch(0.95 0.045 168) 0%, oklch(0.99 0.012 168) 70%);
+    --wash-sky: linear-gradient(160deg, oklch(0.95 0.042 235) 0%, oklch(0.99 0.012 235) 70%);
+    --wash-panel: linear-gradient(
+      115deg,
+      oklch(0.93 0.055 350) 0%,
+      oklch(0.93 0.05 300) 45%,
+      oklch(0.95 0.055 95) 100%
+    );
+    --wash-compare: linear-gradient(
+      155deg,
+      oklch(0.93 0.045 350) 0%,
+      oklch(0.94 0.04 300) 60%,
+      oklch(0.96 0.045 95) 100%
+    );
+
+    /* ---- Syntax, on dark code surfaces --------------------------------- */
+    --syntax-keyword: oklch(0.55 0.17 295);
+    --syntax-call: oklch(0.56 0.18 350);
+    --syntax-string: oklch(0.5 0.13 168);
+    --syntax-number: oklch(0.52 0.13 240);
+    --syntax-dim: oklch(0.5 0.03 340);
+
+    /* The same roles inside light cards, darkened to clear AA. */
+    --syntax-call-light: oklch(0.52 0.18 350);
+    --syntax-string-light: oklch(0.46 0.13 168);
+    --syntax-comment-light: oklch(0.48 0.03 340);
+
+    /* ---- Failure messages: the product's core artifact ------------------ */
+    --failure-subject: oklch(0.82 0.15 350);
+    --failure-actual: oklch(0.86 0.13 92);
+    --failure-hint: oklch(0.84 0.13 168);
+    --failure-eyebrow: oklch(0.76 0.09 350);
+
+    /* ---- Type ----------------------------------------------------------- */
+    --font-display: "Bricolage Grotesque", "Helvetica Neue", Helvetica, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    /* ---- Layout ---------------------------------------------------------- */
+    --container: 1080px;
+    --band: 940px;
+    --gutter: 32px;
+
+    /* ---- Radii ----------------------------------------------------------- */
+    --radius-pill: 999px;
+    --radius-panel: 30px;
+    --radius-hero: 26px;
+    --radius-card: 24px;
+    --radius-row: 18px;
+    --radius-nested: 16px;
+    --radius-focus: 4px;
+
+    /* ---- Shadows: tinted pink, never grey ------------------------------- */
+    --shadow-hairline: 0 1px 2px oklch(0.66 0.1 340 / 0.1);
+    --shadow-card: 0 2px 4px oklch(0.66 0.1 340 / 0.08), 0 18px 44px oklch(0.66 0.1 340 / 0.13);
+    --shadow-cta: 0 6px 20px oklch(0.47 0.19 355 / 0.3);
+    --shadow-pill: 0 3px 10px rgb(177 58 124 / 0.32);
+
+    /*
+     * Easings, named for the curves the design specifies. The overshooting
+     * ones are approximations: a cubic-bezier can overshoot once, so an
+     * elastic settle is written as keyframes instead and lives with the
+     * animation that needs it.
+     */
+    --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1); /* back.out(1.7) */
+    --ease-back-far: cubic-bezier(0.34, 1.8, 0.64, 1); /* back.out(2.6)–(3.4) */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* power3.out */
+    --ease-sine-out: cubic-bezier(0.39, 0.575, 0.565, 1); /* sine.out */
+    --ease-in: cubic-bezier(0.55, 0.085, 0.68, 0.53); /* power2.in */
+  }
+}
+
+/*
+ * The documentation theme layer.
+ *
+ * The docs are the only surface with a dark mode, so they read through this
+ * smaller semantic layer instead of the marketing tokens above. A docs
+ * component styled with --text-strong or --surface-sunken does not flip with
+ * the theme and goes illegible in dark; inside the docs use --fg, --bg-soft and
+ * --fg-mute.
+ *
+ * Code surfaces stay dark in both themes, deliberately: a terminal is dark, and
+ * the cream page is the paper it sits on.
+ */
+@layer tokens {
+  :root {
+    --bg: oklch(0.985 0.01 340);
+    --panel: oklch(1 0 0);
+    --bg-soft: oklch(0.957 0.018 340);
+    --fg: oklch(0.24 0.03 340);
+    --fg-soft: oklch(0.45 0.03 340);
+    --fg-mute: oklch(0.495 0.03 340);
+    --border: oklch(0.915 0.015 340);
+    --pink: oklch(0.48 0.19 352);
+    --lilac: oklch(0.47 0.17 295);
+    --accent-soft: oklch(0.945 0.042 350);
+    --code-bg: oklch(0.255 0.042 330);
+    --code-fg: oklch(0.95 0.01 340);
+    --warn-bg: oklch(0.955 0.045 92 / 0.55);
+    --warn-fg: oklch(0.5 0.13 70);
+    --tip-bg: oklch(0.95 0.045 168 / 0.5);
+    --tip-fg: oklch(0.44 0.11 168);
+    --scroll-track: oklch(0.965 0.012 340);
+    --scroll-thumb: oklch(0.875 0.055 350);
+    --scroll-thumb-hover: oklch(0.72 0.13 350);
+    --shadow: 0 1px 2px oklch(0.66 0.1 340 / 0.07), 0 12px 32px oklch(0.66 0.1 340 / 0.09);
+    /* The wordmark's check, inside the docs. A fixed hex here would keep a dark
+       green on a dark page -- which is the mistake this layer exists to avoid. */
+    --check: var(--brand-mint-ink);
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: oklch(0.175 0.028 320);
+    --panel: oklch(0.215 0.03 320);
+    --bg-soft: oklch(0.255 0.032 320);
+    --fg: oklch(0.962 0.008 340);
+    --fg-soft: oklch(0.785 0.015 340);
+    --fg-mute: oklch(0.655 0.02 340);
+    --border: oklch(0.305 0.03 320);
+    --pink: oklch(0.79 0.16 350);
+    --lilac: oklch(0.76 0.14 295);
+    --accent-soft: oklch(0.305 0.055 340);
+    --code-bg: oklch(0.145 0.028 320);
+    --code-fg: oklch(0.94 0.01 340);
+    --warn-bg: oklch(0.295 0.05 80);
+    --warn-fg: oklch(0.87 0.13 90);
+    --tip-bg: oklch(0.275 0.05 168);
+    --tip-fg: oklch(0.85 0.12 168);
+    --scroll-track: oklch(0.205 0.03 320);
+    --scroll-thumb: oklch(0.345 0.045 330);
+    --scroll-thumb-hover: oklch(0.52 0.1 345);
+    --shadow: 0 1px 2px oklch(0.1 0.02 320 / 0.5), 0 16px 40px oklch(0.1 0.02 320 / 0.55);
+    --check: oklch(0.78 0.14 168);
+    color-scheme: dark;
+  }
+}

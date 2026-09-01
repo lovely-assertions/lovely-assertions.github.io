@@ -1,0 +1,22 @@
+node_modules
+build
+.react-router
+
+# Fetched from the library repo at build time. The documentation has one home,
+# and it is not this repository.
+.docs-cache
+.generated
+public/meta.json
+public/playground/
+
+# Generated assets. All three are committed rather than rebuilt in CI: they
+# change only when the design does, and rebuilding them would put a browser
+# download and a font fetch on every deploy.
+#   pnpm run fonts:fetch   -> public/fonts/, app/styles/fonts.css
+#   pnpm run og:make       -> public/og.png
+#   pnpm run icons:make    -> public/icon.svg, favicon.ico, apple-touch-icon.png
+# The icons are checked against the palette by tests/design.test.ts, so one left
+# behind by a design change fails rather than ships.
+
+*.local
+.DS_Store

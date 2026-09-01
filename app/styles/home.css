@@ -1,0 +1,994 @@
+/*
+ * The marketing surface.
+ *
+ * Light only, and it reads the marketing tokens directly: the theme layer is a
+ * documentation concern.
+ */
+
+@layer components {
+  .marketing {
+    min-block-size: 100vh;
+  }
+
+  /*
+   * Each section carries its own container and gutters, rather than sitting
+   * inside one wrapper. That is how the reference is built, and it lets a
+   * section choose a different width -- the hero's code band is 940px where
+   * everything around it is 1080px -- without fighting an outer box.
+   */
+  .section {
+    max-inline-size: var(--container);
+    margin-inline: auto;
+    padding: 100px var(--gutter) 0;
+  }
+
+  /* ---- Navbar ----------------------------------------------------------- */
+
+  .site-head {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 40;
+  }
+
+  /*
+   * Two layers behind the row: a translucent cream plate that fades in, and a
+   * gradient hairline that draws itself from the left.
+   *
+   * Real elements rather than pseudo-elements, because the timeline that drives
+   * them has to be able to reach them. Both start hidden here and are moved
+   * entirely by that timeline — no transition, or the two would fight.
+   */
+  .site-head-plate {
+    position: absolute;
+    inset: 0;
+    background-color: var(--surface-nav-scrolled);
+    backdrop-filter: blur(16px) saturate(1.4);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .site-head-line {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    block-size: 1.5px;
+    background-image: var(--gradient-hairline);
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .site-head-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    max-inline-size: var(--container);
+    margin-inline: auto;
+    padding: 24px var(--gutter);
+  }
+
+  /*
+   * Under reduced motion no timeline is built, so the scrolled state is
+   * expressed here instead — the bar still changes, it simply does not animate.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .site-head[data-scrolled] .site-head-plate,
+    .site-head[data-scrolled] .site-head-line {
+      opacity: 1;
+    }
+
+    .site-head[data-scrolled] .site-head-line {
+      transform: scaleX(1);
+    }
+
+    .site-head[data-scrolled] .site-head-row {
+      padding-block: 13px;
+    }
+  }
+
+  .site-head-nav {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+
+  /* `position: relative` is load-bearing: the hover sparkles are positioned
+     inside each link. Colour and lift are tweened, not transitioned. */
+  .site-head-nav a {
+    position: relative;
+    padding: 9px 4px; /* keeps the pointer target ≥ 24px */
+    color: var(--text-nav);
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  /* ---- Sections --------------------------------------------------------- */
+
+  /*
+   * Three heading sizes, and each section names the one it uses. The spacing
+   * below a heading is part of the heading's role here, not something the next
+   * element contributes, which is why the margin lives on this side.
+   */
+  .section-title {
+    font-size: clamp(25px, 3.6vw, 46px);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    max-inline-size: 20em;
+    margin-block-end: 34px;
+  }
+
+  .section-title.is-tight {
+    font-size: clamp(22px, 2.8vw, 34px);
+    line-height: 1.1;
+    max-inline-size: 26em;
+    margin-block-end: 28px;
+  }
+
+  .section-title.is-panel {
+    font-size: clamp(24px, 3.2vw, 40px);
+    line-height: 1.06;
+    max-inline-size: none;
+    /* It shares a column with its lead, which supplies the spacing. */
+    margin-block-end: 0;
+  }
+
+  /* The agents heading is followed by a lead, so it sits closer to it. */
+  .section-title.has-lead {
+    margin-block-end: 18px;
+    max-inline-size: 22em;
+  }
+
+  .section-title code {
+    font-size: 0.72em;
+    font-weight: 400;
+  }
+
+  .section-lead {
+    margin-block-end: 32px;
+    max-inline-size: 36em;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+
+  .section-close {
+    margin-block-start: 26px;
+    max-inline-size: 34em;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+
+  .section-caption {
+    margin-block-start: 20px;
+    max-inline-size: 46em;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  /* ---- Hero ------------------------------------------------------------- */
+
+  .hero {
+    max-inline-size: var(--container);
+    margin-inline: auto;
+    padding: 52px var(--gutter) 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: var(--surface-card);
+    box-shadow: var(--shadow-hairline);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: oklch(0.44 0.05 340);
+  }
+
+  /* The pulse is a tween; this is only its resting appearance. */
+  .hero-badge-dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 999px;
+    background: oklch(0.72 0.16 168);
+  }
+
+  .hero-title {
+    max-inline-size: 17em;
+    font-size: clamp(33px, 6.4vw, 82px);
+    line-height: 1;
+    letter-spacing: -0.038em;
+  }
+
+  /*
+   * The highlighter behind "lovely".
+   *
+   * The resting state only: it is drawn and tilted by a timeline, which needs
+   * to start from a known transform. Under reduced motion no timeline is built,
+   * so the `scaleX(1)` fallback below is what a reader sees.
+   */
+  .marker {
+    position: relative;
+    display: inline-block;
+    margin-inline: 0.26em;
+    /* One pill, never split: without this the word can break at a narrow
+       viewport and the highlighter splits with it. */
+    white-space: nowrap;
+    /* Its own stacking context, so the ink can sit behind the word without
+       falling behind the page background. */
+    isolation: isolate;
+  }
+
+  .marker-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .marker-ink {
+    position: absolute;
+    inset-inline: -0.17em;
+    inset-block: -0.02em 0.02em;
+    z-index: 0;
+    border-radius: 999px;
+    background-image: var(--gradient-marker);
+    /*
+     * Not `scaleX(0)`. A zero scale is a matrix with no inverse, and reading
+     * the other axes back out of it yields a skew of -90deg and a vertical
+     * scale of zero -- the highlighter ends up drawn as a flat line. A hair
+     * above zero is invisible and decomposes cleanly.
+     */
+    transform: scaleX(0.0001) rotate(-1.6deg);
+    transform-origin: left center;
+  }
+
+  /* Nothing draws it, so it is simply already there. */
+  @media (prefers-reduced-motion: reduce) {
+    .marker-ink {
+      transform: scaleX(1) rotate(0deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marker-ink {
+      transform: scaleX(1) rotate(0deg);
+      animation: none;
+    }
+  }
+
+  .hero-lead {
+    max-inline-size: 30em;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--text-body);
+  }
+
+  .hero-lead strong {
+    font-weight: 500;
+  }
+
+  .hero-choose {
+    margin-block-start: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .command-pill {
+    position: relative; /* the copy sparkles are positioned inside it */
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border: 0;
+    padding: 15px 22px;
+    border-radius: 999px;
+    background: var(--surface-card);
+    box-shadow: var(--shadow-hairline);
+    color: oklch(0.3 0.04 340);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+  }
+
+  .command-pill:hover {
+    background: var(--surface-card);
+  }
+
+  .command-pill .copy-button-icon[data-icon="copy"] {
+    color: var(--link);
+  }
+
+  .command-pill .copy-button-icon[data-icon="check"] {
+    /* Hex, like every animated colour. */
+    color: #2f9e78;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 15px;
+    padding: 15px 28px;
+    border-radius: 999px;
+    background-image: var(--gradient-cta);
+    box-shadow: var(--shadow-cta);
+    color: oklch(0.99 0.01 350);
+    font-weight: 500;
+    text-decoration: none;
+    /* The lift is tweened, not transitioned; only the gradient is CSS. */
+    transition: background-image 240ms ease;
+  }
+
+  .cta:hover {
+    background-image: var(--gradient-cta-hover);
+    color: oklch(0.99 0.01 350);
+  }
+
+  /* Its own band: narrower than the container, with its own rhythm. */
+  .code-band {
+    max-inline-size: var(--band);
+    margin-inline: auto;
+    padding: 56px var(--gutter) 0;
+  }
+
+  .hero-code {
+    inline-size: 100%;
+    padding: 30px 32px;
+    border-radius: var(--radius-hero);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-card);
+    text-align: start;
+  }
+
+  .hero-code pre {
+    margin: 0;
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text-strong);
+  }
+
+  /* ---- Syntax, on light and on dark ------------------------------------- */
+
+  .tok-keyword {
+    color: var(--syntax-keyword);
+  }
+  .tok-call {
+    color: var(--syntax-call);
+    font-weight: 500;
+  }
+  .tok-string {
+    color: var(--syntax-string);
+  }
+  .tok-number {
+    color: var(--syntax-number);
+  }
+  .tok-dim {
+    color: var(--syntax-dim);
+  }
+  .tok-call-light {
+    color: var(--syntax-call-light);
+    font-weight: 500;
+  }
+  .tok-string-light {
+    color: var(--syntax-string-light);
+  }
+  .tok-comment-light {
+    color: var(--syntax-comment-light);
+  }
+  .tok-prompt {
+    color: oklch(0.84 0.13 168);
+  }
+  .tok-section {
+    color: oklch(0.76 0.09 350);
+  }
+
+  /* ---- Comparison -------------------------------------------------------- */
+
+  .comparison {
+    padding-block-start: 110px;
+  }
+
+  /* The last two sections breathe a little less than the rest. */
+  .promises,
+  .docs-index {
+    padding-block-start: 90px;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .comparison-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 26px 28px;
+    border-radius: var(--radius-card);
+  }
+
+  .comparison-panel[data-side="before"] {
+    background: var(--surface-sunken);
+  }
+
+  .comparison-panel[data-side="after"] {
+    background-image: var(--wash-compare);
+  }
+
+  .comparison-label {
+    font-size: 13px;
+    color: oklch(0.54 0.02 340);
+  }
+
+  .comparison-panel[data-side="after"] .comparison-label {
+    color: oklch(0.48 0.1 350);
+  }
+
+  .comparison-code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text-strong);
+  }
+
+  .comparison-out,
+  .comparison-message {
+    margin: 0;
+    /* Pushed to the foot of the panel, so both outputs line up however tall
+       the code above them turns out to be. */
+    margin-block-start: auto;
+    padding: 18px 20px;
+    border-radius: var(--radius-nested);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  .comparison-out {
+    background: var(--surface-card);
+    color: oklch(0.5 0.02 340);
+  }
+
+  .comparison-message {
+    background-image: var(--gradient-code);
+    color: var(--text-on-dark);
+  }
+
+  /* ---- Cards ------------------------------------------------------------- */
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 28px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-hairline);
+  }
+
+  .card[data-wash="pink"] {
+    background-image: var(--wash-pink);
+  }
+  .card[data-wash="lilac"] {
+    background-image: var(--wash-lilac);
+  }
+  .card[data-wash="butter"] {
+    background-image: var(--wash-butter);
+  }
+  .card[data-wash="mint"] {
+    background-image: var(--wash-mint);
+  }
+  .card[data-wash="sky"] {
+    background-image: var(--wash-sky);
+  }
+
+  .card h3 {
+    font-size: 22px;
+    line-height: 1.14;
+    letter-spacing: -0.026em;
+  }
+
+  .card p:not(.card-eyebrow) {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  /*
+   * Inline code in the card's prose only. Left unscoped this also hits the
+   * <code> inside the card's own <pre>, which then overrides the block's size
+   * and leading from the inside.
+   */
+  .card :not(pre) > code {
+    font-size: 13px;
+  }
+
+  /* The agents cards are tighter than the claims cards, and their body copy is
+     half a point smaller. Declared after the base card so the cascade reads in
+     source order rather than relying on specificity. */
+  .cards[data-density="tight"] .card {
+    padding: 26px;
+    gap: 12px;
+  }
+
+  .cards[data-density="tight"] .card p:not(.card-eyebrow) {
+    font-size: 14.5px;
+  }
+
+  .card-code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: oklch(0.34 0.04 340);
+  }
+
+  /*
+   * Written as `.card p.card-eyebrow` so it outranks `.card p`, which would
+   * otherwise set its size. Each label takes its card's own hue rather than a
+   * neutral grey: the eyebrow is part of the card's colour, not chrome on top
+   * of it.
+   */
+  .card p.card-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .card[data-wash="mint"] p.card-eyebrow {
+    color: oklch(0.42 0.1 168);
+  }
+
+  .card[data-wash="sky"] p.card-eyebrow {
+    color: oklch(0.42 0.1 250);
+  }
+
+  .card[data-wash="pink"] p.card-eyebrow {
+    color: oklch(0.46 0.14 350);
+  }
+
+  .badge {
+    display: grid;
+    place-items: center;
+    inline-size: 32px;
+    block-size: 32px;
+    border-radius: 999px;
+    color: var(--badge-glyph);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .badge[data-tone="pink"] {
+    background: var(--badge-pink);
+  }
+  .badge[data-tone="lilac"] {
+    background: var(--badge-lilac);
+  }
+  .badge[data-tone="butter"] {
+    background: var(--badge-butter);
+  }
+
+  /* ---- Report strip ------------------------------------------------------ */
+
+  .report {
+    margin-block-start: 20px;
+    padding: 28px 32px;
+    border-radius: var(--radius-hero);
+    background-image: var(--gradient-code);
+  }
+
+  .report-eyebrow {
+    /* The strip is a flex column with its own gap; a margin here would count
+       the space twice. */
+    margin: 0;
+    color: var(--failure-eyebrow);
+  }
+
+  .report {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .report pre {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-on-dark);
+  }
+
+  .report .section-caption {
+    margin: 0;
+    color: var(--text-on-dark-muted);
+  }
+
+  /* ---- Install ----------------------------------------------------------- */
+
+  .install-panel {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 44px;
+    align-items: center;
+    padding: 46px 44px;
+    border-radius: var(--radius-panel);
+    background-image: var(--wash-panel);
+  }
+
+  .panel-title {
+    font-size: clamp(24px, 3.2vw, 40px);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+
+  .panel-prose {
+    margin-block-start: 14px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .install-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .segmented.is-onpanel {
+    background: oklch(0.99 0.01 340 / 0.65);
+  }
+
+  .install-command {
+    position: relative;
+    inline-size: 100%;
+    border-radius: var(--radius-row);
+    background-image: var(--gradient-code);
+  }
+
+  .install-command pre {
+    margin: 0;
+    padding: 20px 60px 20px 24px;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    /* A one-line command sets its own leading; 1.85 belongs to a listing. */
+    line-height: normal;
+    color: var(--text-on-dark);
+  }
+
+  .install-copy-button {
+    position: absolute;
+    inset-block-start: 13px;
+    inset-inline-end: 13px;
+  }
+
+  .install-proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .install-pass {
+    color: oklch(0.45 0.13 168);
+  }
+
+  /* ---- Promise pills ----------------------------------------------------- */
+
+  .promise-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .promise {
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-size: 14.5px;
+  }
+
+  .promise :not(pre) > code,
+  .promise > code {
+    font-size: 13px;
+  }
+
+  .promise[data-tone="pink"] {
+    background: oklch(0.94 0.045 350);
+    color: oklch(0.36 0.05 350);
+  }
+  .promise[data-tone="lilac"] {
+    background: oklch(0.94 0.04 295);
+    color: oklch(0.36 0.05 295);
+  }
+  .promise[data-tone="butter"] {
+    background: oklch(0.95 0.045 95);
+    color: oklch(0.38 0.05 70);
+  }
+  .promise[data-tone="mint"] {
+    background: oklch(0.94 0.04 168);
+    color: oklch(0.36 0.05 168);
+  }
+  .promise[data-tone="sky"] {
+    background: oklch(0.94 0.038 235);
+    color: oklch(0.36 0.05 235);
+  }
+
+  /* ---- Docs index -------------------------------------------------------- */
+
+  .docs-index {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .docs-index-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .docs-index-copy .panel-prose {
+    margin-block-start: 0;
+    max-inline-size: 24em;
+  }
+
+  .docs-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    border-radius: var(--radius-row);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-hairline);
+    color: var(--text-strong);
+    text-decoration: none;
+    transition:
+      transform 350ms var(--ease-out),
+      background-color 350ms ease;
+  }
+
+  .docs-row:hover {
+    transform: translateX(5px);
+    color: var(--text-strong);
+  }
+
+  .docs-row[data-tone="pink"]:hover {
+    background: oklch(0.94 0.045 350);
+  }
+  .docs-row[data-tone="lilac"]:hover {
+    background: oklch(0.94 0.04 295);
+  }
+  .docs-row[data-tone="butter"]:hover {
+    background: oklch(0.95 0.045 95);
+  }
+  .docs-row[data-tone="mint"]:hover {
+    background: oklch(0.94 0.04 168);
+  }
+
+  .docs-row-n {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .docs-row[data-tone="pink"] .docs-row-n {
+    color: oklch(0.52 0.19 350);
+  }
+  .docs-row[data-tone="lilac"] .docs-row-n {
+    color: oklch(0.5 0.17 295);
+  }
+  .docs-row[data-tone="butter"] .docs-row-n {
+    color: oklch(0.48 0.13 60);
+  }
+  .docs-row[data-tone="mint"] .docs-row-n {
+    color: oklch(0.46 0.13 168);
+  }
+
+  .docs-row:hover .docs-row-n,
+  .docs-row:focus-visible .docs-row-n {
+    transform: scale(1.25) rotate(-8deg);
+  }
+
+  .docs-row-label {
+    font-size: 16px;
+  }
+
+  .docs-row-arrow {
+    margin-inline-start: auto;
+    font-size: 15px;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition:
+      opacity 300ms ease,
+      transform 300ms var(--ease-back);
+  }
+
+  /* The arrow takes the row's own accent, like its number. */
+  .docs-row[data-tone="pink"] .docs-row-arrow {
+    color: oklch(0.52 0.19 350);
+  }
+
+  .docs-row[data-tone="lilac"] .docs-row-arrow {
+    color: oklch(0.5 0.17 295);
+  }
+
+  .docs-row[data-tone="butter"] .docs-row-arrow {
+    color: oklch(0.48 0.13 60);
+  }
+
+  .docs-row[data-tone="mint"] .docs-row-arrow {
+    color: oklch(0.46 0.13 168);
+  }
+
+  .docs-row:hover .docs-row-arrow,
+  .docs-row:focus-visible .docs-row-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ---- Footer ------------------------------------------------------------ */
+
+  .site-foot {
+    display: flex;
+    /* Both wraps are the reference's. They were missing here, which nothing
+       showed while the row held three links and the note was short. */
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    max-inline-size: var(--container);
+    margin: 100px auto 0;
+    padding: 30px var(--gutter) 56px;
+    border-block-start: 1px solid oklch(0.92 0.02 340);
+  }
+
+  .site-foot-note {
+    max-inline-size: 32em;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .site-foot-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .site-foot-nav a {
+    padding-block: 5px;
+    color: var(--text-muted);
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .site-foot-nav a:hover {
+    color: var(--text-nav-hover);
+  }
+
+  /* ---- Responsive: 1024 / 760 / 520 -------------------------------------- */
+
+  @media (max-width: 1024px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .install-panel,
+    .docs-index {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 30px;
+    }
+
+    .section,
+    .comparison,
+    .promises,
+    .docs-index {
+      padding-block-start: 76px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    :root {
+      --gutter: 20px;
+    }
+
+    .cards,
+    .comparison-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .section,
+    .comparison,
+    .promises,
+    .docs-index {
+      padding-block-start: 60px;
+    }
+
+    .hero-code {
+      padding: 24px 20px;
+    }
+
+    .hero-code pre {
+      font-size: 12.5px;
+    }
+
+    .site-foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .site-head-nav {
+      gap: 14px;
+    }
+
+    .site-head-nav a {
+      font-size: 13.5px;
+    }
+
+    .install-panel {
+      padding: 30px 22px;
+    }
+  }
+
+  /*
+   * At 375px the wordmark and three nav links do not fit a 375px row, and this
+   * site never scrolls sideways. Everything is kept and tightened rather than
+   * dropping a link: the measured budget is 200px of logo + 161px of nav + 40px
+   * of gutter against 375px available.
+   */
+  @media (max-width: 400px) {
+    .site-head-row {
+      padding-inline: 16px;
+    }
+
+    .site-head-nav {
+      gap: 10px;
+    }
+
+    .logo {
+      gap: 8px;
+    }
+
+    .logo-word {
+      font-size: 15px;
+    }
+  }
+}

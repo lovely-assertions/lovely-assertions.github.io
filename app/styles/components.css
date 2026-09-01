@@ -1,0 +1,307 @@
+/*
+ * Components shared by both surfaces.
+ *
+ * Nothing here defines a colour: every value is a token, so the palette lives
+ * in exactly one file.
+ */
+
+@layer components {
+  /* ---- Logo ------------------------------------------------------------ */
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    padding-block: 3px; /* keeps the pointer target ≥ 24px */
+    color: var(--text-strong);
+    font-family: var(--font-display);
+    text-decoration: none;
+  }
+
+  /* The wordmark and the check share a baseline, 6px apart. */
+  .logo-name {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .logo-dots {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .logo-dots > span {
+    inline-size: 10px;
+    block-size: 10px;
+    border-radius: 999px;
+    /* Hex, because these are animated. */
+    background-color: var(--brand-pink);
+  }
+
+  .logo-dots > span:nth-child(2) {
+    background-color: var(--brand-lilac);
+  }
+
+  .logo-dots > span:nth-child(3) {
+    background-color: var(--brand-butter);
+  }
+
+  .logo-word {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .logo-word > span {
+    display: inline-block;
+  }
+
+  .logo-check {
+    color: var(--brand-mint-ink);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    opacity: 0;
+  }
+
+  .logo[data-size="sm"] {
+    gap: 10px;
+    flex: none;
+  }
+
+  .logo[data-size="sm"] .logo-dots > span {
+    inline-size: 9px;
+    block-size: 9px;
+  }
+
+  .logo[data-size="sm"] .logo-word {
+    font-size: 16px;
+  }
+
+  .logo[data-size="sm"] .logo-check {
+    font-size: 13px;
+  }
+
+  /* Inside the docs both the wordmark and its check invert with the theme. */
+  .docs .logo {
+    color: var(--fg);
+  }
+
+  .docs .logo-check {
+    color: var(--check);
+  }
+
+  /* ---- Copy button ------------------------------------------------------ */
+
+  .copy-button {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 32px;
+    block-size: 32px;
+    border: 0;
+    border-radius: 999px;
+    background: oklch(1 0 0 / 0.1);
+    color: var(--text-on-dark);
+    cursor: pointer;
+    /* Only the surface is CSS; the press and the icon swap are tweened. */
+    transition: background-color 200ms ease;
+  }
+
+  .copy-button:hover {
+    background: oklch(1 0 0 / 0.22);
+  }
+
+  .copy-button-icons {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .copy-button-icon {
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .copy-button-icon[data-icon="check"] {
+    opacity: 0;
+    transform: scale(0.5) rotate(-25deg);
+    /* Pale enough to read on the near-black surfaces these buttons sit on;
+       the light command pill overrides it. */
+    color: #8fe3c4;
+  }
+
+  /* The bar's button is a size smaller than the standalone one. */
+  .code-bar .copy-button {
+    inline-size: 30px;
+    block-size: 30px;
+  }
+
+  /* ---- Segmented control ------------------------------------------------ */
+
+  .segmented {
+    display: inline-flex;
+    gap: 5px;
+    padding: 4px;
+    border-radius: 999px;
+    background: oklch(0.995 0.006 340 / 0.72);
+  }
+
+  .segmented button {
+    padding: 9px 17px;
+    border: 0;
+    border-radius: 999px;
+    /*
+     * Never set `background` and `background-image` together: the shorthand
+     * resets the longhand, and the selected pill ends up as white text on the
+     * browser's grey button face.
+     */
+    background-color: transparent;
+    color: #6b5563;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: color 200ms ease;
+  }
+
+  .segmented button[aria-checked="true"] {
+    background-image: var(--gradient-cta);
+    color: #fffafd;
+    box-shadow: var(--shadow-pill);
+  }
+
+  /* ---- Code surfaces ---------------------------------------------------- */
+
+  /*
+   * Code never scrolls sideways. `pre-wrap` alone does not do it: a long
+   * identifier is one unbreakable token, so it needs `overflow-wrap: anywhere`
+   * beside it or the line paints outside its card.
+   */
+  .code,
+  .doc-body pre,
+  .example pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .code-dark {
+    border-radius: var(--radius-nested);
+    background-image: var(--gradient-code);
+    color: var(--text-on-dark);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+  }
+
+  /* ---- Failure message -------------------------------------------------- */
+
+  /*
+   * The product's core artifact. Which value, what was required of it, what it
+   * actually held — the grammar comes from the library's real output and is
+   * never paraphrased.
+   */
+  .failure {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+
+  .failure b {
+    color: var(--failure-subject);
+    font-weight: 400;
+  }
+
+  .failure i {
+    color: var(--failure-actual);
+    font-style: normal;
+  }
+
+  .failure em {
+    color: var(--failure-hint);
+    font-style: normal;
+  }
+
+  /* ---- Eyebrow ---------------------------------------------------------- */
+
+  /*
+   * The eyebrow owns the space between itself and the heading it introduces,
+   * so a section that has no eyebrow needs no rule to undo one.
+   */
+  .eyebrow {
+    margin-block-end: 14px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(0.46 0.1 350);
+  }
+}
+
+@layer components {
+  /*
+   * The client-side error page.
+   *
+   * The same shape `public/404.html` draws, because they answer one situation by
+   * two routes: that file handles a hard request GitHub Pages could not resolve,
+   * this handles a client navigation to a route that is not there. It used to
+   * render `.shell`, a class defined in no stylesheet at all -- measured
+   * `padding: 0`, `max-width: none`, the heading flush against the viewport edge.
+   *
+   * Token-driven, so it reads correctly on both surfaces and in both themes: the
+   * error can surface over the marketing cream or over the docs ground.
+   */
+  .error-page {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    min-block-size: 100vh;
+    padding: 24px;
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .error-page-dots {
+    display: flex;
+    gap: 6px;
+    margin-block-end: 6px;
+  }
+
+  .error-page-dots span {
+    inline-size: 10px;
+    block-size: 10px;
+    border-radius: 999px;
+  }
+
+  .error-page-dots span:nth-child(1) {
+    background: var(--brand-pink);
+  }
+
+  .error-page-dots span:nth-child(2) {
+    background: var(--brand-lilac);
+  }
+
+  .error-page-dots span:nth-child(3) {
+    background: var(--brand-butter);
+  }
+
+  .error-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 40px);
+    letter-spacing: -0.03em;
+  }
+
+  .error-page-lead {
+    max-inline-size: 46ch;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .error-page-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    justify-content: center;
+    margin-block-start: 10px;
+  }
+}

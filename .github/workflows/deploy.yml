@@ -1,0 +1,151 @@
+name: Deploy
+
+# The documentation is not in this repository. Every build fetches it from
+# lovely-assertions/lovely-assertions at the tag of its latest release, and the
+# fetched tree is never committed here -- the markdown has exactly one home.
+#
+# `docs_ref` overrides which ref to build from. That is both the rollback lever
+# and the way to publish a docs-only fix that no release would otherwise carry.
+
+on:
+  push:
+    branches: [main]
+  # Sent by the library's own release workflow, so a release reaches the site in
+  # minutes rather than waiting for the weekly run below. Until that step exists
+  # upstream -- a POST to this repository's dispatches endpoint with a token
+  # that can write here -- this trigger is inert and the cron is the only
+  # automatic path.
+  repository_dispatch:
+    types: [docs-updated]
+  workflow_dispatch:
+    inputs:
+      docs_ref:
+        description: "Ref of lovely-assertions to build the docs from (tag, branch or SHA)"
+        required: false
+        type: string
+  schedule:
+    # The backstop behind `repository_dispatch` above. The site is idle between
+    # releases, and GitHub disables scheduled workflows in public repositories
+    # after 60 days of inactivity, so this keeps itself alive too.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+# Never cancel a deployment in flight: a routine docs push must not interrupt a
+# release-triggered publish half way through.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        # The version is pinned by `packageManager` in package.json, so corepack
+        # installs exactly what a contributor runs locally.
+        run: corepack enable
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check, before the build
+        # The whole pre-build chain, from package.json. Spelled there and only
+        # there: this workflow and the deploy one used to list the gates step by
+        # step, and the two lists had already drifted -- a pull request was
+        # skipping `sitemap` and `gate:runnable`, so those failures only showed
+        # up on main, after merge, as a failed deploy.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DOCS_REF: ${{ inputs.docs_ref }}
+        run: pnpm run ci:before
+
+      - name: Build
+        # Pre-rendering runs each route against a short-lived preview server on
+        # an ephemeral port, and a cold-start race can refuse a single
+        # connection (remix-run/react-router#15255). Retrying the build alone is
+        # the documented workaround, and it is why the chain is split in three
+        # rather than run as one `pnpm run ci` -- a retry must not re-fetch the
+        # documentation or re-run the gates that already passed.
+        run: pnpm run build || pnpm run build
+
+      - name: Check the built site
+        # Everything that can only be checked once there is a site: the search
+        # index, the sitemap and its two link directions, the markdown for
+        # agents, and the four browser gates.
+        #
+        # This replaced a step that tested five hand-written paths for an
+        # index.html, to prove the prerender had not silently become a
+        # single-page app. `pnpm run sitemap` makes that assertion over every
+        # route the site publishes instead of five of them, and without a
+        # second list of route names to keep in step.
+        run: pnpm run ci:after
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          # Explicit: the default is `_site/`, a Jekyll convention, and it would
+          # silently upload nothing.
+          path: build/client
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  verify:
+    name: Verify
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: The published site answers deep links with 200
+        # Checked against the live site rather than the build output, because
+        # this is the failure that only appears once Pages is actually serving:
+        # a deep link that 404s is invisible in local development, where the dev
+        # server rewrites everything to the index.
+        run: |
+          set -euo pipefail
+          base="${{ needs.deploy.outputs.page_url || 'https://lovely-assertions.dev' }}"
+          base="${base%/}"
+          for path in / /docs/ /docs/guides/strings/ /docs/reference/assertions/; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 5 "$base$path")
+            echo "$code  $base$path"
+            test "$code" = "200"
+          done
+
+      - name: The markdown is served as markdown
+        # The one thing no local check can prove: GitHub Pages decides the
+        # content type, and an agent that asks for a page and is handed
+        # `application/octet-stream` has to guess what it received. Both
+        # spellings of the address are checked, because both are published.
+        run: |
+          set -euo pipefail
+          base="${{ needs.deploy.outputs.page_url || 'https://lovely-assertions.dev' }}"
+          base="${base%/}"
+          for path in /llms.txt /llms-full.txt /index.md /docs/guides/strings.md /docs/guides/strings/index.md; do
+            read -r code type < <(curl -sS -o /dev/null -w '%{http_code} %{content_type}' \
+              --retry 3 --retry-delay 5 "$base$path")
+            echo "$code  $type  $base$path"
+            test "$code" = "200"
+            case "$type" in text/*) ;; *) echo "not served as text"; exit 1 ;; esac
+          done

@@ -1,0 +1,290 @@
+/*
+ * Element defaults and the page ground, once, so components never restate them.
+ */
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  img,
+  svg {
+    max-inline-size: 100%;
+    height: auto;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* A heading is a heading because of its level, not its size. */
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+  }
+}
+
+@layer base {
+  html {
+    /* Anchored headings must clear the sticky header. */
+    scroll-padding-block-start: 96px;
+  }
+
+  /*
+   * Anything that acts on a click says so -- once, here, rather than each
+   * component remembering. Declared per component it is a rule you can forget,
+   * and the hero's copy button is where it was forgotten.
+   *
+   * Deliberately not `[tabindex="0"]`: a scrollable code block is focusable so
+   * a keyboard reader can scroll it, and it is not clickable. A pointer there
+   * promises an action that does not exist.
+   */
+  :is(
+    a[href],
+    button,
+    summary,
+    label[for],
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="radio"],
+    [role="option"]
+  ) {
+    cursor: pointer;
+  }
+
+  :is(button, [role="button"], [role="tab"], [role="radio"], [role="option"]):disabled,
+  [aria-disabled="true"] {
+    cursor: default;
+  }
+
+  /*
+   * No font-size and no line-height here, deliberately.
+   *
+   * Every text role in the design carries its own pair, and inheriting a size
+   * and a leading from the body silently changes anything that does not set
+   * them -- which is how a pill that should be 44px tall becomes 48px. The
+   * roles are explicit; the body only sets the family and the ground.
+   */
+  body {
+    /* The documentation ground by default; the marketing page overrides it. */
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :root[data-surface="marketing"] body {
+    background: var(--surface-page);
+    color: var(--text-body);
+  }
+
+  /*
+   * The page halo.
+   *
+   * Sized in pixels, not percentages, so it stays at the top of a document of
+   * any length: on the 1832-line reference a percentage-sized gradient would
+   * stretch across the whole page and wash it out.
+   */
+  .halo {
+    background-image:
+      radial-gradient(820px 620px at 12% -60px, oklch(0.9 0.075 350 / 0.85) 0%, transparent 62%),
+      radial-gradient(760px 560px at 88% 20px, oklch(0.9 0.065 285 / 0.8) 0%, transparent 60%),
+      radial-gradient(980px 520px at 50% 300px, oklch(0.94 0.07 95 / 0.55) 0%, transparent 68%);
+    background-repeat: no-repeat;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    color: var(--text-strong);
+    text-wrap: pretty;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    color: var(--link-hover);
+  }
+
+  /* Butter, so a selection reads as a highlighter rather than as an OS accent. */
+  ::selection {
+    background: oklch(0.86 0.11 92);
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+
+  /*
+   * Several controls have no border of their own, so without this they have no
+   * focus indicator at all.
+   *
+   * Token-driven, not a fixed pink: a marketing colour here does not flip with
+   * the theme and measures 2.5:1 against the dark documentation ground, under
+   * the 3:1 a non-text indicator needs. `--pink` is defined on bare `:root`, so
+   * the marketing surface gets the same value it always had.
+   */
+  :focus-visible {
+    outline: 2px solid var(--pink);
+    outline-offset: 3px;
+    border-radius: var(--radius-focus);
+  }
+
+  /*
+   * Nothing on this site scrolls horizontally.
+   *
+   * `pre-wrap` alone is not enough: a long identifier is a single unbreakable
+   * token, so it needs `overflow-wrap: anywhere` beside it or the line paints
+   * straight out of its card. Applied to every block, not per component --
+   * every place this was set individually is a place it was eventually
+   * forgotten.
+   */
+  pre,
+  code {
+    max-inline-size: 100%;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  pre code {
+    white-space: inherit;
+    overflow-wrap: inherit;
+  }
+}
+
+@layer base {
+  /* Scrollbars, restyled on both surfaces. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.875 0.055 350) oklch(0.962 0.014 340);
+  }
+
+  ::-webkit-scrollbar {
+    width: 13px;
+    height: 13px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: oklch(0.962 0.014 340);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.875 0.055 350);
+    border-radius: 999px;
+    border: 3px solid oklch(0.962 0.014 340);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.72 0.13 350);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: oklch(0.962 0.014 340);
+  }
+
+  /*
+   * Inside the docs the same rule is token-driven, so it flips with the theme.
+   *
+   * Keyed off the root rather than off `.docs`, because the element that owns
+   * the page scrollbar is <html> and no descendant selector can reach it. As
+   * `.docs *` this override styled the rails inside the shell and left the
+   * document's own bar on the hardcoded light palette above -- measured, a
+   * bright pink thumb on a cream track running the full height of a near-black
+   * page, for every dark-mode reader whose system shows persistent scrollbars.
+   */
+  :root[data-surface="docs"],
+  :root[data-surface="docs"] * {
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  }
+
+  :root[data-surface="docs"] ::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+  }
+
+  :root[data-surface="docs"] ::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-color: var(--scroll-track);
+  }
+
+  :root[data-surface="docs"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-hover);
+  }
+
+  /* The rails get a thinner version. */
+  .docs-rail::-webkit-scrollbar {
+    width: 9px;
+  }
+
+  .docs-rail::-webkit-scrollbar-thumb {
+    border-width: 2px;
+  }
+}
+
+@layer utilities {
+  /* Present to a screen reader, absent to everyone else. */
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /*
+   * Reduced motion disables the JavaScript too, not just these rules -- the
+   * animation helpers check the same query before they do anything. Here we
+   * only make sure nothing CSS-driven survives.
+   *
+   * No `!important` needed: `utilities` is the last layer declared, so it wins
+   * over every animation defined in `components` or `content` by cascade order
+   * alone. That is what the layers are for.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
+      scroll-behavior: auto;
+    }
+  }
+}

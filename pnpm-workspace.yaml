@@ -1,0 +1,9 @@
+# pnpm blocks dependency install scripts by default, which is the right default:
+# a postinstall is arbitrary code running at install time. These are allowed
+# deliberately, and each one does not work without it.
+allowBuilds:
+  # Downloads the browser that the layout check drives.
+  puppeteer: true
+  # Platform-specific native binaries.
+  esbuild: true
+  "@biomejs/biome": true

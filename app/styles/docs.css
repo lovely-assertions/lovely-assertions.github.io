@@ -1,0 +1,894 @@
+/*
+ * The documentation surface.
+ *
+ * Everything here reads the theme layer — --fg, --bg-soft, --fg-mute, --panel —
+ * and never the marketing tokens, which do not flip with the theme. A docs
+ * component styled with --text-strong goes illegible the moment someone turns
+ * the lights off.
+ */
+
+@layer components {
+  .docs {
+    min-block-size: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: -9999px;
+    z-index: 100;
+    padding: 12px 18px;
+    border-radius: 11px;
+    font-size: 14.5px;
+    background: var(--panel);
+    color: var(--fg);
+    box-shadow: var(--shadow);
+  }
+
+  .skip-link:focus {
+    inset-inline-start: 16px;
+    inset-block-start: 16px;
+  }
+
+  /* ---- Header ------------------------------------------------------------ */
+
+  .docs-head {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 50;
+    background: var(--bg);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .docs-head-row {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    max-inline-size: 1520px;
+    block-size: 62px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  .docs-drawer-toggle {
+    display: none;
+    place-items: center;
+    inline-size: 34px;
+    block-size: 34px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel);
+    color: var(--fg);
+    cursor: pointer;
+  }
+
+  .docs-version {
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .docs-search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    inline-size: 300px;
+    margin-inline-start: auto;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--fg-mute);
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: border-color 200ms ease;
+  }
+
+  .docs-search-trigger:hover {
+    border-color: var(--pink);
+  }
+
+  .docs-search-label {
+    margin-inline-end: auto;
+  }
+
+  .docs-search-trigger kbd,
+  .docs-search-input kbd {
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--panel);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+
+  .docs-head-nav {
+    display: flex;
+    gap: 16px;
+  }
+
+  .docs-head-nav a {
+    padding: 5px 2px;
+    color: var(--fg-soft);
+    font-size: 13.5px;
+    text-decoration: none;
+  }
+
+  .docs-head-nav a:hover {
+    color: var(--pink);
+  }
+
+  .docs-theme-toggle {
+    display: grid;
+    place-items: center;
+    inline-size: 32px;
+    block-size: 32px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--fg-soft);
+    cursor: pointer;
+  }
+
+  .docs-theme-toggle:hover {
+    color: var(--pink);
+  }
+
+  /*
+   * Both icons ship; the stylesheet picks one.
+   *
+   * The head script has already written `data-theme` on <html> when this is
+   * read, so the right glyph is drawn on the first paint. React cannot manage
+   * that -- the pages are static HTML shared by every reader, so it starts at
+   * light and can only correct itself once hydration has run. Measured on a
+   * throttled connection, the sun sat on a fully dark page for three seconds
+   * and the moon never arrived.
+   *
+   * Sun is the default, matching the light theme a reader with no stored choice
+   * and no JavaScript gets.
+   */
+  .docs-theme-icon {
+    display: grid;
+    place-items: center;
+  }
+
+  .docs-theme-icon[data-icon="moon"],
+  :root[data-theme="dark"] .docs-theme-icon[data-icon="sun"] {
+    display: none;
+  }
+
+  :root[data-theme="dark"] .docs-theme-icon[data-icon="moon"] {
+    display: grid;
+  }
+
+  /* The same trick for the modifier key, stamped by the same script: `⌘K` was
+     baked into all 38 prerendered pages, so every Windows and Linux reader was
+     shown a key they do not have for a shortcut that works on Ctrl. */
+  kbd[data-key="mac"],
+  :root[data-platform="mac"] kbd[data-key="ctrl"] {
+    display: none;
+  }
+
+  :root[data-platform="mac"] kbd[data-key="mac"] {
+    display: inline;
+  }
+
+  /* ---- Grid --------------------------------------------------------------- */
+
+  .docs-grid {
+    display: grid;
+    /* minmax(0, …) matters: without it a long code line pushes the column
+       wider than the viewport and the whole page scrolls sideways. */
+    grid-template-columns: 268px minmax(0, 1fr) 232px;
+    gap: 48px;
+    align-items: start;
+    max-inline-size: 1520px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  .docs-sidebar,
+  .docs-toc {
+    position: sticky;
+    inset-block-start: 62px;
+    max-block-size: calc(100vh - 62px);
+    overflow-y: auto;
+  }
+
+  .docs-sidebar {
+    padding-block: 30px 60px;
+  }
+
+  .docs-toc {
+    padding-block: 40px 60px;
+  }
+
+  .docs-main {
+    min-inline-size: 0;
+    padding-block: 40px 96px;
+  }
+
+  /* ---- Sidebar ------------------------------------------------------------ */
+
+  .docs-nav-group + .docs-nav-group {
+    margin-block-start: 26px;
+  }
+
+  .docs-nav-group ul {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs-nav-label {
+    padding: 0 12px 8px;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .docs-nav-sublabel {
+    margin-block-start: 26px;
+    padding: 0 12px 8px;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .docs-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    color: var(--fg-soft);
+    font-size: 13.5px;
+    text-decoration: none;
+  }
+
+  .docs-nav-row:hover {
+    background: var(--bg-soft);
+    color: var(--fg-soft);
+  }
+
+  .docs-nav-row[aria-current="page"] {
+    background: var(--accent-soft);
+    color: var(--pink);
+    font-weight: 500;
+  }
+
+  .docs-nav-badge {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--lilac);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .docs-nav-foot {
+    display: flex;
+    flex-direction: column;
+    margin-block-start: 26px;
+    padding: 18px 12px 0;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .docs-nav-foot a {
+    padding-block: 5px;
+    color: var(--fg-mute);
+    font-size: 12.5px;
+    text-decoration: none;
+  }
+
+  .docs-nav-foot a:hover {
+    color: var(--pink);
+  }
+
+  /* ---- Article header ------------------------------------------------------ */
+
+  .docs-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-block-end: 14px;
+    color: var(--fg-mute);
+    font-size: 12.5px;
+  }
+
+  .docs-crumbs a {
+    color: var(--fg-mute);
+    text-decoration: none;
+  }
+
+  .docs-crumbs a:hover {
+    color: var(--pink);
+  }
+
+  .docs-crumbs > span[aria-hidden] {
+    opacity: 0.5;
+  }
+
+  .docs-crumbs-here {
+    color: var(--fg-soft);
+  }
+
+  .doc-title {
+    margin-block: 0 18px;
+    color: var(--fg);
+    font-size: clamp(31px, 4.4vw, 46px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .doc-lead {
+    max-inline-size: 34em;
+    color: var(--fg-soft);
+    font-size: 19px;
+    line-height: 1.6;
+  }
+
+  .doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-block: 20px 34px;
+    padding-block-end: 30px;
+    border-block-end: 1px solid var(--border);
+    color: var(--fg-mute);
+    font-size: 12.5px;
+  }
+
+  .doc-meta > span[aria-hidden] {
+    opacity: 0.5;
+  }
+
+  .doc-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-block: 5px;
+    color: var(--fg-mute);
+    text-decoration: none;
+  }
+
+  .doc-edit:hover {
+    color: var(--pink);
+  }
+
+  /*
+   * Reads as one more item in the meta row, not as a button on it. The row is
+   * "6 min read · Copy for an agent · Edit this page", and a filled control in
+   * the middle of that would claim to be the most important thing on the page.
+   */
+  .doc-copy {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    border: 0;
+    background: none;
+    color: var(--fg-mute);
+    font: inherit;
+  }
+
+  .doc-copy:hover {
+    color: var(--pink);
+  }
+
+  /* The icons ship pale for the near-black code bars. This row is on paper. */
+  .doc-copy .copy-button-icon[data-icon="copy"] {
+    color: inherit;
+  }
+
+  .doc-copy .copy-button-icon[data-icon="check"] {
+    /* Hex, like every animated colour. */
+    color: #2f9e78;
+  }
+
+  /* ---- Contents rail -------------------------------------------------------- */
+
+  .docs-toc-label {
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .docs-toc-list {
+    margin-block-start: 12px;
+    padding: 0;
+    border-inline-start: 1px solid var(--border);
+    list-style: none;
+  }
+
+  .docs-toc-list a {
+    display: flex;
+    align-items: stretch;
+    padding: 6px 0;
+    margin-inline-start: -1px;
+    color: var(--fg-mute);
+    font-size: 13.5px;
+    text-decoration: none;
+  }
+
+  /* Present on every row at zero opacity, so becoming active changes the
+     colour and nothing else -- the label never moves sideways. */
+  .docs-toc-list a::before {
+    content: "";
+    flex: none;
+    inline-size: 2px;
+    margin-inline: -1px 12px;
+    border-radius: 2px;
+    background: var(--pink);
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+
+  .docs-toc-list a:hover {
+    color: var(--fg-soft);
+  }
+
+  .docs-toc-list a[aria-current] {
+    color: var(--pink);
+    font-weight: 500;
+  }
+
+  .docs-toc-list a[aria-current]::before {
+    opacity: 1;
+  }
+
+  .docs-toc-list li[data-depth="3"] a::before {
+    margin-inline-end: 24px;
+  }
+
+  .docs-toc-top {
+    margin-block-start: 18px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fg-mute);
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+
+  .docs-toc-top:hover {
+    color: var(--pink);
+  }
+
+  /* ---- Pager ----------------------------------------------------------------- */
+
+  /*
+   * The corpus's own cross-references, above the reading-order pager.
+   *
+   * Deliberately lighter than the pager: these are sideways moves the author
+   * chose, and the pager is the path through. Same rail, less weight.
+   */
+  .doc-next {
+    margin-block-start: 34px;
+    padding-block-start: 22px;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .doc-next-label {
+    margin: 0;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .doc-next ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-block: 12px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .doc-next a {
+    color: var(--fg);
+    text-decoration: none;
+    border-block-end: 1px solid var(--border);
+    padding-block-end: 2px;
+    /* The rule only, like `.docs-pager-cell` right below. Transitioning the
+       colour too means the theme toggle animates these links for 200ms while
+       every other word on the page changes at once. */
+    transition: border-color 200ms ease;
+  }
+
+  .doc-next a:hover {
+    color: var(--pink);
+    border-color: var(--pink);
+  }
+
+  .docs-pager {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    margin-block-start: 20px;
+  }
+
+  .docs-pager-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 22px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-decoration: none;
+    transition: border-color 200ms ease;
+  }
+
+  .docs-pager-cell:hover {
+    border-color: var(--pink);
+  }
+
+  /* A missing neighbour keeps its cell so the next link stays on the right. */
+  .docs-pager-cell[data-empty] {
+    visibility: hidden;
+  }
+
+  .docs-pager-cell[data-align="end"] {
+    text-align: end;
+  }
+
+  .docs-pager-eyebrow {
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .docs-pager-title {
+    color: var(--fg);
+    font-size: 16px;
+  }
+
+  /* ---- Search overlay --------------------------------------------------------- */
+
+  /*
+   * A native <dialog>: the browser gives Escape, the focus trap and an inert
+   * background for free.
+   *
+   * The `[open]` guard matters. A closed dialog is `display: none` by default,
+   * and setting `display` unconditionally overrides that -- which ships the
+   * search panel open on every page.
+   */
+  .docs-search-overlay {
+    max-inline-size: none;
+    max-block-size: none;
+    inline-size: 100%;
+    block-size: 100%;
+    padding: 96px 24px 24px;
+    border: 0;
+    background: none;
+    overflow: hidden;
+  }
+
+  .docs-search-overlay[open] {
+    display: flex;
+    justify-content: center;
+  }
+
+  .docs-search-overlay::backdrop {
+    background: oklch(0.2 0.03 330 / 0.45);
+    backdrop-filter: blur(6px);
+  }
+
+  .docs-search-panel {
+    inline-size: 100%;
+    max-inline-size: 620px;
+    block-size: fit-content;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .docs-search-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-block-end: 1px solid var(--border);
+    color: var(--fg-mute);
+  }
+
+  .docs-search-input input {
+    flex: 1;
+    border: 0;
+    background: none;
+    color: var(--fg);
+    /* 16px: anything smaller makes iOS zoom the page on focus. */
+    font: inherit;
+    font-size: 16px;
+    outline: none;
+  }
+
+  .docs-search-results {
+    max-block-size: 380px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .docs-search-results [role="option"] {
+    display: flex;
+    /* The rows are anchors now, so that a modifier-click opens a result in a
+       new tab. They still look and behave like listbox options. */
+    color: inherit;
+    text-decoration: none;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 11px;
+    cursor: pointer;
+  }
+
+  .docs-search-results [role="option"][aria-selected="true"] {
+    background: var(--accent-soft);
+    color: var(--pink);
+  }
+
+  .docs-search-group {
+    inline-size: 74px;
+    letter-spacing: 0.12em;
+    flex: none;
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .docs-search-title {
+    font-size: 14.5px;
+  }
+
+  /* A heading inside a page it already listed: indented under its page, and
+     quieter, so the eye reads the page first and the section second. */
+  .docs-search-results [role="option"][data-heading] {
+    padding-block: 7px;
+  }
+
+  [data-heading] .docs-search-title {
+    font-size: 13.5px;
+    color: var(--fg-mute);
+  }
+
+  [data-heading] .docs-search-title::before {
+    content: "↳";
+    margin-inline-end: 8px;
+    color: var(--fg-mute);
+  }
+
+  [role="option"][data-heading][aria-selected="true"] .docs-search-title {
+    color: var(--pink);
+  }
+
+  .docs-search-empty {
+    padding: 22px 20px;
+    color: var(--fg-mute);
+    font-size: 14px;
+  }
+
+  .docs-search-foot {
+    display: flex;
+    gap: 14px;
+    padding: 12px 20px;
+    border-block-start: 1px solid var(--border);
+    color: var(--fg-mute);
+    font-size: 11.5px;
+  }
+
+  .docs-search-foot-end {
+    margin-inline-start: auto;
+  }
+
+  /* ---- Responsive: 1180 / 1024 / 900 / 760 / 520 -------------------------------- */
+
+  @media (max-width: 1180px) {
+    .docs-grid {
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 36px;
+    }
+
+    .docs-toc {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .docs-search-trigger {
+      inline-size: 210px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .docs-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .docs-drawer-toggle {
+      display: grid;
+    }
+
+    .docs-sidebar {
+      display: none;
+    }
+
+    .docs-sidebar[data-open] {
+      display: block;
+      position: fixed;
+      inset: 62px 0 0 0;
+      z-index: 60;
+      max-block-size: none;
+      padding: 22px 20px 44px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .docs-head-row,
+    .docs-grid {
+      padding-inline: 20px;
+    }
+
+    .docs-head-row {
+      gap: 14px;
+    }
+
+    .docs-search-trigger {
+      inline-size: 42px;
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .docs-search-label,
+    .docs-search-trigger kbd {
+      display: none;
+    }
+
+    .docs-pager {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .docs-pager-cell[data-empty] {
+      display: none;
+    }
+
+    .docs-search-overlay {
+      padding: 56px 12px 12px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .docs-head-row,
+    .docs-grid {
+      padding-inline: 16px;
+    }
+
+    .docs-head-row {
+      gap: 10px;
+    }
+
+    /*
+     * Below this the header cannot hold everything without the page scrolling
+     * sideways, which the design forbids at every width. These two go first:
+     * the logo already leads home, and GitHub stays one tap away on "Edit this
+     * page" and in the drawer's own footer.
+     */
+    .docs-head-nav,
+    .docs-version {
+      display: none;
+    }
+  }
+}
+
+@layer components {
+  .playground {
+    margin-block-start: 26px;
+  }
+
+  .playground-source {
+    inline-size: 100%;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+    resize: vertical;
+    tab-size: 4;
+  }
+
+  .playground-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-block: 16px;
+  }
+
+  .playground-controls button {
+    padding: 9px 20px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--fg);
+    font-size: 13.5px;
+    cursor: pointer;
+    transition:
+      border-color 200ms ease,
+      color 200ms ease;
+  }
+
+  .playground-controls button:hover:not(:disabled) {
+    border-color: var(--pink);
+    color: var(--pink);
+  }
+
+  .playground-controls button:disabled {
+    color: var(--fg-mute);
+    cursor: default;
+  }
+
+  .playground-version {
+    color: var(--fg-mute);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  /* Both panes are live regions, so they are in the document from the first
+     paint and are empty until there is something to say. An empty one gets no
+     box -- generated content does not defeat `:empty`. */
+  .playground .playground-error:empty,
+  .playground .example-output:empty {
+    display: none;
+  }
+
+  .playground-error {
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--fg-mute);
+    font-size: 14px;
+  }
+
+  .playground .example-output {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--code-bg);
+    overflow: hidden;
+  }
+
+  .playground .example-output pre {
+    margin: 0;
+    padding: 8px 20px 20px;
+    color: var(--code-fg);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
