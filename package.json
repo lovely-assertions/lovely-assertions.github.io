@@ -25,14 +25,15 @@
     "format": "biome check --write .",
     "test": "node --test 'tests/**/*.test.ts'",
     "ci:before": "pnpm run content && pnpm run lint && pnpm run typecheck && pnpm test && pnpm run gate:parity",
-    "ci:after": "pnpm run search:index && pnpm run sitemap && pnpm run agents && pnpm run gate:runnable && pnpm run gate:agents && pnpm run gate:a11y && pnpm run gate:layout && pnpm run gate:motion",
+    "ci:after": "pnpm run search:index && pnpm run sitemap && pnpm run agents && pnpm run gate:built && pnpm run gate:runnable && pnpm run gate:agents && pnpm run gate:a11y && pnpm run gate:layout && pnpm run gate:motion",
     "ci": "pnpm run ci:before && pnpm run build && pnpm run ci:after",
     "icons:make": "node scripts/make-icons.ts",
     "sitemap": "node scripts/sitemap.ts",
     "agents": "node scripts/agents.ts",
     "gate:runnable": "node scripts/check-runnable.ts",
     "gate:agents": "node scripts/check-agents.ts",
-    "gate:a11y": "node scripts/check-a11y.ts"
+    "gate:a11y": "node scripts/check-a11y.ts",
+    "gate:built": "node --test tests/built-pages.after-build.ts"
   },
   "dependencies": {
     "@react-router/node": "8.3.1",
