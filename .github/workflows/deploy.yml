@@ -24,10 +24,16 @@ on:
         required: false
         type: string
   schedule:
-    # The backstop behind `repository_dispatch` above. The site is idle between
-    # releases, and GitHub disables scheduled workflows in public repositories
-    # after 60 days of inactivity, so this keeps itself alive too.
-    - cron: "17 6 * * 1"
+    # The automatic path, until `repository_dispatch` above has a token behind
+    # it. Hourly rather than weekly because this is what carries a release to
+    # the site, and a `freshness` job below turns almost all of these into a
+    # curl and an exit -- the build only runs when the library has released
+    # something this site has not published yet.
+    #
+    # It also keeps itself alive: GitHub disables scheduled workflows in public
+    # repositories after 60 days of inactivity, and a site that is idle between
+    # releases would otherwise switch its own automation off.
+    - cron: "23 * * * *"
 
 permissions:
   contents: read
@@ -39,8 +45,54 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  freshness:
+    name: Has the library released something newer?
+    runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.compare.outputs.stale }}
+    steps:
+      # Only the scheduled run asks this. A push changed this repository, and a
+      # dispatch was somebody saying "publish"; both mean build regardless of
+      # what the library has done.
+      - id: compare
+        env:
+          SCHEDULED: ${{ github.event_name == 'schedule' }}
+        run: |
+          set -uo pipefail
+          if [ "$SCHEDULED" != "true" ]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "not a scheduled run; building."
+            exit 0
+          fi
+
+          # The tag the library has released, and the tag this site last
+          # published -- which the site states about itself at /meta.json, so
+          # nothing has to be remembered between runs.
+          released=$(curl -sS --retry 3 --retry-delay 5 \
+            -H 'accept: application/vnd.github+json' \
+            https://api.github.com/repos/lovely-assertions/lovely-assertions/releases/latest \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"])' 2>/dev/null || true)
+          published=$(curl -sSL --retry 3 --retry-delay 5 \
+            https://lovely-assertions.github.io/meta.json \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["source"]["ref"])' 2>/dev/null || true)
+
+          echo "released:  ${released:-unknown}"
+          echo "published: ${published:-unknown}"
+
+          # Either question going unanswered means building. A wasted build
+          # costs two minutes; a skipped one leaves the site describing a
+          # release nobody can install any more, and nothing would say so.
+          if [ -z "$released" ] || [ -z "$published" ] || [ "$released" != "$published" ]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+            echo "the site already publishes $published; nothing to do."
+          fi
+
   build:
     name: Build
+    needs: freshness
+    if: needs.freshness.outputs.stale == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -1,0 +1,14 @@
+# Every path, one owner. The ruleset on `main` requires a review from a code
+# owner on every pull request, so this file is what makes "reviewed before it
+# lands" mean something rather than being a setting nobody is named by.
+#
+# The last matching pattern wins, so the catch-all comes first and anything
+# needing a different owner goes below it.
+* @AymericP
+
+# The two that decide what runs with write access and what reaches the public
+# internet. Listed separately not because the owner differs but because a diff
+# here deserves reading twice: one grants permissions to a workflow, the other
+# points the site at a different documentation corpus.
+/.github/            @AymericP
+/docs.source.json    @AymericP
