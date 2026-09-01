@@ -203,9 +203,9 @@ const SAMPLER = `
 `
 
 async function main(): Promise<void> {
-  const puppeteer = await import('puppeteer')
+  const { launch } = await import('./browser.ts')
   const server = serve(PORT)
-  const browser = await puppeteer.launch({ protocolTimeout: 180_000 })
+  const browser = await launch({ protocolTimeout: 180_000 })
   const failures: string[] = []
 
   try {

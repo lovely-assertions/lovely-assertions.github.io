@@ -88,12 +88,12 @@ function ico(images: readonly { size: number; png: Buffer }[]): Buffer {
 }
 
 async function main(): Promise<void> {
-  const puppeteer = await import('puppeteer')
+  const { launch } = await import('./browser.ts')
   const out = path.join(ROOT, 'public')
 
   await writeFile(path.join(out, 'icon.svg'), ICON, 'utf8')
 
-  const browser = await puppeteer.launch()
+  const browser = await launch()
   try {
     const page = await browser.newPage()
 

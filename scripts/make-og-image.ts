@@ -20,7 +20,7 @@ const WIDTH = 1200
 const HEIGHT = 630
 
 async function main(): Promise<void> {
-  const puppeteer = await import('puppeteer')
+  const { launch } = await import('./browser.ts')
 
   // The fonts are already downloaded for the site; inline them so the renderer
   // needs no network and cannot silently fall back to a system face.
@@ -93,7 +93,7 @@ async function main(): Promise<void> {
   <span class="actual">[3, 1, 2]</span>.
 </div>`
 
-  const browser = await puppeteer.launch()
+  const browser = await launch()
   try {
     const page = await browser.newPage()
     await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 })

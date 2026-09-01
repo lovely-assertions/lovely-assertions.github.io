@@ -106,9 +106,9 @@ function localPath(url: string): string | null {
 async function copyOnePage(
   route: string,
 ): Promise<{ handed: number; served: number; beforeThePress: number }> {
-  const puppeteer = await import('puppeteer')
+  const { launch } = await import('./browser.ts')
   const server = serve(PORT)
-  const browser = await puppeteer.launch({ protocolTimeout: 60_000 })
+  const browser = await launch({ protocolTimeout: 60_000 })
 
   try {
     const page = await browser.newPage()

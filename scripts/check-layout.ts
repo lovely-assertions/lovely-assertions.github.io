@@ -56,16 +56,16 @@ const CLICKABLE = [
 ].join(', ')
 
 async function main(): Promise<void> {
-  let puppeteer: typeof import('puppeteer')
+  let launch: typeof import('./browser.ts')['launch']
   try {
-    puppeteer = await import('puppeteer')
+    ;({ launch } = await import('./browser.ts'))
   } catch {
     console.log('\n  puppeteer is not installed; skipping the layout check.\n')
     return
   }
 
   const server = serve(PORT)
-  const browser = await puppeteer.launch()
+  const browser = await launch()
   const problems: Overflow[] = []
   const pointers: string[] = []
 

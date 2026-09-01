@@ -144,16 +144,16 @@ const WIDTHS = [375, 768, 1280] as const
 const PORT = 4327
 
 async function checkEditing(): Promise<void> {
-  let puppeteer: typeof import('puppeteer')
+  let launch: typeof import('./browser.ts')['launch']
   try {
-    puppeteer = await import('puppeteer')
+    ;({ launch } = await import('./browser.ts'))
   } catch {
     console.log('  puppeteer is not installed; skipping the editing check.\n')
     return
   }
 
   const server = serve(PORT)
-  const browser = await puppeteer.launch()
+  const browser = await launch()
   const failures: string[] = []
 
   try {
